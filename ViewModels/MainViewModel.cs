@@ -1,27 +1,31 @@
 ﻿using DynamicData;
+using ReactiveUI;
 using ReactiveUI_MemoryLeakTest_Wpf.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive.Linq;
-using Reactive.Bindings.Extensions;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace ReactiveUI_MemoryLeakTest_Wpf.ViewModels
 {
-    public class MainViewModel
+    public class MainViewModel : ReactiveObject
     {
+
+        private SourceCache<TestModel, int> sourceCache;
         public ReadOnlyObservableCollection<TestViewModel> Tests => tests;
         private ReadOnlyObservableCollection<TestViewModel> tests;
-
+        private Random random;
         public MainViewModel()
         {
-           var random = new Random();
-           var sourceCache = new SourceCache<TestModel, int>(m => m.Id);
+            random = new Random();
+            sourceCache = new SourceCache<TestModel, int>(m => m.Id);
 
             sourceCache.Connect()
                 .Transform(model => new TestViewModel(model))
-                .ObserveOnUIDispatcher()
+                .ObserveOn(RxApp.MainThreadScheduler)
                 .Bind(out tests)
                 .Subscribe();
 
